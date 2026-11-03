@@ -62,3 +62,12 @@ def put_device(name: str, device: Device, response: Response):
         response.status_code = status.HTTP_200_OK
         
     return device
+
+# Task 5: DELETE device
+@app.delete("/devices/{name}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_device(name: str):
+    result = devices.delete_one({"name": name})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
+    # 204 No Content requires no body to be returned
+    return None
