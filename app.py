@@ -30,3 +30,14 @@ def get_device(name: str):
     if not device:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
     return device
+
+# Task 3: POST create device
+@app.post("/devices", status_code=status.HTTP_201_CREATED)
+def create_device(device: Device):
+    # Optional but recommended: Check if device already exists
+    if devices.find_one({"name": device.name}):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Device already exists")
+    
+    # Insert document (using model_dump() for Pydantic v2; use dict() if on v1)
+    devices.insert_one(device.model_dump())
+    return device
