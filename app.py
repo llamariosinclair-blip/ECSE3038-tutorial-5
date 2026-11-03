@@ -41,3 +41,24 @@ def create_device(device: Device):
     # Insert document (using model_dump() for Pydantic v2; use dict() if on v1)
     devices.insert_one(device.model_dump())
     return device
+
+# Task 4: PUT update or create device
+@app.put("/devices/{name}")
+def put_device(name: str, device: Device, response: Response):
+    # Enforce that the URI name matches the body payload name
+    if name != device.name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="The name in the URL must match the name in the body."
+        )
+    
+    # replace_one with upsert=True replaces the existing doc or creates a new one
+    result = devices.replace_one({"name": name}, device.model_dump(), upsert=True)
+    
+    # RFC 9110 §9.3.4: Return 201 Created if a new resource was created, otherwise 200 OK
+    if result.upserted_id:
+        response.status_code = status.HTTP_201_CREATED
+    else:
+        response.status_code = status.HTTP_200_OK
+        
+    return device
